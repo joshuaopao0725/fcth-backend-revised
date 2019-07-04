@@ -139,7 +139,6 @@ class PackagedApi(Resource):
             view_packages = []
             view_itinerary = []
             for package in packages:
-                print(package.id)
                 ticket = Ticket.query.get(package.flight)
                 hotel = Hotel.query.get(package.hotel)
                 itineraries = Itinerary.query.filter(Itinerary.package == package.id).all()
@@ -147,7 +146,6 @@ class PackagedApi(Resource):
                 service_charge = (float(ticket.price) + float(hotel.price))*.02
                 vat = float(service_charge) * .12
                 for itinerary in itineraries:
-                    print(itinerary)
                     view_itinerary.append(
                         {
                             'id': itinerary.id,
@@ -326,7 +324,9 @@ class PackageBookingApiId(Resource):
                     'expirationDate': package.expirationDate,
                     'isExpired': package.isExpired,
                     'isPaid': bookings.isPaid,
-                    'ext': receipt.extension
+                    'ext': receipt.extension,
+                    'last_purchased': 'helo',
+                    'purchases': 'world'
                 }
             )
 
