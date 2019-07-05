@@ -69,7 +69,9 @@ A_PACKAGE = API.model('Package Details',
                        'expirationDate': fields.Date(),
                        'isExpired': fields.Boolean(),
                        'isPaid': fields.Boolean(),
-                       'ext': fields.String()
+                       'ext': fields.String(),
+                       'last_purchased': fields.DateTime(),
+                       'purchases': fields.Integer()
                       })
 
 A_CREATE_PACKAGE_NEW = API.model('Create Package',

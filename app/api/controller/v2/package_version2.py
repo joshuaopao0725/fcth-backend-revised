@@ -139,6 +139,48 @@ class PackagedApi(Resource):
             view_packages = []
             view_itinerary = []
             for package in packages:
+                id_now = str( package.id )
+                lp_sql = """
+                    select
+                        max( a.\"PaidOn\" ) as last_purchased
+                    from
+                        payments as a join
+                        (
+                            select
+                                b.*, c.*,
+                                b."Id" as "PackageId"
+                            from
+                                packages as b join
+                                packagebookings as c 
+                            on
+                                b.\"Id\"=c.\"PackagesFk\"
+                        ) as d
+                    on
+                        a.\"BookingReference\"=d.\"ReferenceNumber\" and
+                        d.\"PackageId\"=""" + id_now
+                nos_sql = """
+                    select
+                        a.*
+                    from
+                        payments as a join
+                        (
+                            select
+                                b.*, c.*,
+                                b."Id" as "PackageId"
+                            from
+                                packages as b join
+                                packagebookings as c 
+                            on
+                                b.\"Id\"=c.\"PackagesFk\" and
+                                c.\"IsPaid\"=True
+                        ) as d
+                    on
+                        a.\"BookingReference\"=d.\"ReferenceNumber\" and
+                        d.\"PackageId\"=""" + id_now
+                last_purchased = db.engine.execute( lp_sql ).first()[0]
+                no_of_sales = len( db.engine.execute( nos_sql ).fetchall() )
+                print( "LAST PURCHASED:", last_purchased, dir( last_purchased ) )
+                print( "NO_OF_SALES:", no_of_sales, dir( no_of_sales ) )
                 ticket = Ticket.query.get(package.flight)
                 hotel = Hotel.query.get(package.hotel)
                 itineraries = Itinerary.query.filter(Itinerary.package == package.id).all()
@@ -183,7 +225,9 @@ class PackagedApi(Resource):
                         },
                         'remainingSlots': package.remainingSlots,
                         'expirationDate': package.expirationDate,
-                        'isExpired': package.isExpired
+                        'isExpired': package.isExpired,
+                        'last_purchased': last_purchased,
+                        'purchases': no_of_sales
                     }
                 )
 
@@ -324,9 +368,7 @@ class PackageBookingApiId(Resource):
                     'expirationDate': package.expirationDate,
                     'isExpired': package.isExpired,
                     'isPaid': bookings.isPaid,
-                    'ext': receipt.extension,
-                    'last_purchased': 'helo',
-                    'purchases': 'world'
+                    'ext': receipt.extension if receipt else "None"
                 }
             )
 
